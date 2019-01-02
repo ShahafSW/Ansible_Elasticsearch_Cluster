@@ -1,0 +1,22 @@
+--- # This task is adding elastic GPG KEY
+
+  - name: Add an apt signing key, uses whichever key is at the URL
+    apt_key:
+      url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+      state: present
+
+  - name: Check that HTTPS transport is available to APT
+    apt:
+      name: apt-transport-https
+      state: latest
+
+  - name: Ansible create file if it doesn't exist
+    file:
+      path: /etc/apt/sources.list.d/elastic-6.x.list
+      state: file
+      mode: 0644
+
+  - name: Save the repository definition to /etc/apt/sources.list.d/elastic-6.5.list
+    lineinfile:
+      path: /etc/apt/sources.list.d/elastic-6.5.list
+      line: deb https://artifacts.elastic.co/packages/6.x/apt stable main

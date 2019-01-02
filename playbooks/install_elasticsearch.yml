@@ -1,0 +1,14 @@
+--- # This is a playbook for creating elasticsearch cluster
+
+- name: Install elasticsearch
+  hosts: elasticsearch
+  vars:
+    HOST_COUNT: "{{ ((ansible_play_hosts | length) / 2)| int + 1 }}"
+  become: true
+  become_method: sudo
+  connection: ssh
+  gather_facts: yes
+  roles:
+    - install_elastic_key
+    - install_java
+    - install_elasticsearch

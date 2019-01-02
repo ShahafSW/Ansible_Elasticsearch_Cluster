@@ -1,0 +1,47 @@
+--- # This task will install elasticsearch and config /etc/elasticsearch/elasticsearch.yml and /etc/elasticsearch/jvm.options
+
+  - name: Install elasticsearch
+    apt:
+      update_cache: yes
+      name: elasticsearch
+      state: present
+
+  - name: Download GCE discovery plugin
+    elasticsearch_plugin:
+      name: discovery-gce
+      state: present
+      force: yes
+
+  - name: Defining zone variable for GCE zone
+    shell: "curl -s http://metadata.google.internal/computeMetadata/v1/instance/zone -H 'Metadata-Flavor: Google' | cut -c 29-"
+    register: gce_zone
+
+  - name: Defining project_id variable for GCE zone
+    shell: "curl http://metadata.google.internal/computeMetadata/v1/project/project-id -H 'Metadata-Flavor: Google'"
+    register: project_id
+
+  - name: Copying elasticsearch.yml to /etc/elasticsearch/
+    template:
+      src: elasticsearch.yml
+      dest: /etc/elasticsearch/elasticsearch.yml
+      owner: elasticsearch
+      group: elasticsearch
+      mode: 0644
+
+  - name: Modifying java max heap (1/2 of total memory size)
+    lineinfile:
+      path: /etc/elasticsearch/jvm.options
+      regexp: '^-Xmx1g'
+      line: "-Xmx{{ (ansible_memtotal_mb / 2) | int }}m"
+
+  - name: Modifying java min heap (1/2 of total memory size)
+    lineinfile:
+      path: /etc/elasticsearch/jvm.options
+      regexp: '^-Xms1g'
+      line: "-Xms{{ (ansible_memtotal_mb / 2) | int }}m"
+
+  - name: Restart and enabling elasticsearch server
+    service :
+      name: elasticsearch
+      state: restarted
+      enabled: yes

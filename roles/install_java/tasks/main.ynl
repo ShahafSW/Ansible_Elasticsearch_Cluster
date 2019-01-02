@@ -1,0 +1,11 @@
+--- # This task will install java
+
+- name: Add openjdk-8-jdk repository
+  apt_repository:
+   repo: ppa:openjdk-r/ppa
+  notify: Update repositories cache
+
+- name: Install openjdk-8-jdk
+  apt:
+    name: openjdk-8-jdk
+    state: present
